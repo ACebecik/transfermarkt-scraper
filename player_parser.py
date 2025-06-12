@@ -34,13 +34,13 @@ class PlayerParser():
                          "team": team}
                     )
 
-        player_id = soup.find("tm-watchlist")["player-id"]
+        player_id = int(soup.find("tm-watchlist")["player-id"])
         player_name = soup.find("h1", class_ = "data-header__headline-wrapper").text.replace(" ","").strip()
-        player_jersey_no = player_name.split("\n", 1)[0].replace("#", "")
+        player_jersey_no = int(player_name.split("\n", 1)[0].replace("#", ""))
         try:
             player_name = player_name.split("\n", 1)[1]
         except:
-            player_jersey_no = None
+            player_jersey_no = 0
 
         entry = {}
         entry[player_id] = achievements
