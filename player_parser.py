@@ -37,7 +37,11 @@ class PlayerParser():
         player_id = soup.find("tm-watchlist")["player-id"]
         player_name = soup.find("h1", class_ = "data-header__headline-wrapper").text.replace(" ","").strip()
         player_jersey_no = player_name.split("\n", 1)[0].replace("#", "")
-        player_name = player_name.split("\n", 1)[1]
+        try:
+            player_name = player_name.split("\n", 1)[1]
+        except:
+            player_jersey_no = None
+
         entry = {}
         entry[player_id] = achievements
 

@@ -6,12 +6,15 @@ headers = {
 }
 
 team_url = "https://www.transfermarkt.com.tr/galatasaray/startseite/verein/141"
+league_url = "https://www.transfermarkt.com.tr/super-lig/startseite/wettbewerb/TR1"
 
 if __name__ == "__main__":
 
-    players_url = urlExtractor().getPlayers(team_url=team_url, headers=headers)
-    for player_url in players_url:
-        entry = PlayerParser().getAchievements(player_url, headers=headers)
-        print(entry.name, entry.achievements)
+    teams_url = urlExtractor().getTeams(league_url=league_url, headers=headers)
+    for team in teams_url:
+        players_url = urlExtractor().getPlayers(team_url=team, headers=headers)
+        for player_url in players_url:
+            entry = PlayerParser().getAchievements(player_url, headers=headers)
+            print(entry.name, entry.achievements)
 
 
