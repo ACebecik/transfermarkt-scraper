@@ -1,12 +1,6 @@
-from ensurepip import bootstrap
-
-from player_parser import PlayerParser
-from url_extractor import urlExtractor
-from mongoengine import connect
-from league_urls import leagues
-from kafka import KafkaProducer
 from kafka import KafkaConsumer
-import json
+from player_parser import PlayerParser
+from mongoengine import connect
 
 headers = {
     'authority': 'www.transfermarkt.com',
@@ -25,9 +19,6 @@ headers = {
     'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
 }
 
-team_url = "https://www.transfermarkt.com.tr/galatasaray/startseite/verein/141"
-league_url = "https://www.transfermarkt.com.tr/super-lig/startseite/wettbewerb/TR1"
-
 uri = "mongodb+srv://Cluster58101:alperen78@cluster58101.jmvst6e.mongodb.net/?retryWrites=true&w=majority&appName=Cluster58101"
 
 client = connect("tmarkt", host=uri)
@@ -38,41 +29,20 @@ db = client["tmarkt"]
 collection = db["players"]
 topic_name = "players-topic"
 
-if __name__ == "__main__":
+topic_name = "players-topic"
 
+consumer = KafkaConsumer(
+    topic_name,
+    bootstrap_servers="localhost:9092",
+    value_deserializer=bytes.decode
+)
 
-    producer = KafkaProducer(
-        bootstrap_servers = "localhost:9092",
-        value_serializer=str.encode
-    )
-    consumer = KafkaConsumer(
-        topic_name,
-        bootstrap_servers="localhost:9092",
-        value_deserializer = bytes.decode
-    )
+for message in consumer:
 
-    teams_url = []
-    players_url= []
-
-    for league in leagues :
-        #print(f"For league: {league}")
-        while not teams_url:
-            teams_url = urlExtractor().getTeams(league_url=league, headers=headers)
-        for team in teams_url:
-            print(f"For team {team}")
-            while not players_url:
-                players_url = urlExtractor().getPlayers(team_url=team, headers=headers)
-            for player_url in players_url:
-                print(player_url)
-                producer.send(topic_name, value=player_url)
-                producer.flush()
-            players_url = []
-        teams_url = []
-
-
-
-
-
-
-
+    entry = PlayerParser().getAchievements(message.value, headers=headers)
+    try:
+        entry.save()
+        print(entry.name, entry.achievements)
+    except Exception as e:
+        print(f"Skipped player: {entry.name}, reasoning: {e}")
 

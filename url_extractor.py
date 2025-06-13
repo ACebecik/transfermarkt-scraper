@@ -1,5 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
+import time
+import random
 
 class urlExtractor():
 
@@ -7,6 +9,9 @@ class urlExtractor():
         self.base_url = "https://www.transfermarkt.com"
     def getTeams(self, league_url, headers):
         response = requests.get(url = league_url, headers=headers)
+        print(response.status_code)
+        if response.status_code == 503:
+            time.sleep(random.uniform(20, 40))
         soup = BeautifulSoup(response.text, "html.parser")
         teams = soup.find_all("td", class_ = "hauptlink no-border-links")
         teams_urls = []
@@ -21,6 +26,9 @@ class urlExtractor():
     def getPlayers(self, team_url, headers):
 
         response = requests.get(url=team_url, headers=headers)
+        print(response.status_code)
+        if response.status_code == 503:
+            time.sleep(random.uniform(20, 40))
         soup = BeautifulSoup(response.text, "html.parser")
         players = soup.find_all("td", class_="hauptlink")
         player_urls = []
@@ -41,7 +49,8 @@ if __name__ == "__main__":
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
     }
     url = "https://www.transfermarkt.com.tr/super-lig/startseite/wettbewerb/TR1"
-    #team_urls = urlExtractor().getTeams(url, headers)
-    url = "https://www.transfermarkt.com.tr/besiktas-istanbul/startseite/verein/114/saison_id/2024"
-    print(urlExtractor().getPlayers(url, headers))
+    team_urls = urlExtractor().getTeams(url, headers)
+    print(team_urls)
+ #   url = "https://www.transfermarkt.com.tr/besiktas-istanbul/startseite/verein/114/saison_id/2024"
+    #print(urlExtractor().getPlayers(url, headers))
 
