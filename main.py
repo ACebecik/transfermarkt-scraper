@@ -68,11 +68,3 @@ if __name__ == "__main__":
                 producer.flush()
             players_url = []
         teams_url = []
-
-
-
-
-
-
-
-

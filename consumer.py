@@ -41,8 +41,8 @@ for message in consumer:
 
     entry = PlayerParser().getAchievements(message.value, headers=headers)
     try:
-        entry.save()
         print(entry.name, entry.achievements)
+        entry.save()
     except Exception as e:
         print(f"Skipped player: {entry.name}, reasoning: {e}")
 

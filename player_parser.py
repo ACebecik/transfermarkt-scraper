@@ -1,12 +1,19 @@
 from bs4 import BeautifulSoup
 import requests
 from entry_format import Player
+import time
+import random
 
 class PlayerParser():
 
     def getAchievements(self, url, headers):
 
         response = requests.get(url=url, headers=headers)
+        while response.status_code != 200:
+            time.sleep(random.uniform(10, 30))
+            response = requests.get(url=url, headers=headers)
+            print(response.status_code)
+
         soup = BeautifulSoup(response.text, "html.parser")
         jobs = soup.find_all("tr", class_="hauptlink")
 
@@ -34,8 +41,12 @@ class PlayerParser():
                          "team": team}
                     )
 
-        player_id = int(soup.find("tm-watchlist")["player-id"])
-        player_name = soup.find("h1", class_ = "data-header__headline-wrapper").text.replace(" ","").strip()
+        try:
+            player_id = int(soup.find("tm-watchlist")["player-id"])
+            player_name = soup.find("h1", class_="data-header__headline-wrapper").text.replace(" ", "").strip()
+        except:
+            return -1
+
         try:
             player_jersey_no = int(player_name.split("\n", 1)[0].replace("#", ""))
             player_name = player_name.split("\n", 1)[1]
@@ -45,9 +56,15 @@ class PlayerParser():
         entry = {}
         entry[player_id] = achievements
 
-        current_team = soup.find("span", class_= "data-header__club").text.replace(" ","").strip()
-        current_league = soup.find("span", class_ = "data-header__league").text.replace(" ","").strip()
+        try :
+            current_team =  soup.find("span", class_= "data-header__club").text.replace(" ","").strip()
+        except:
+            current_team = "n/a"
 
+        try:
+            current_league = soup.find("span", class_="data-header__league").text.replace(" ", "").strip()
+        except:
+            current_league = "n/a"
 
         player = Player(player_id=player_id,
                         name=player_name,
@@ -77,4 +94,4 @@ if __name__ == "__main__":
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
     }
 
-    print(PlayerParser().getAchievements("https://www.transfermarkt.com.tr/arlind-ajeti/erfolge/spieler/159288", headers=headers).achievements)
+    print(PlayerParser().getAchievements("https://www.transfermarkt.com.tr/melih-bostan/erfolge/spieler/697917", headers=headers).current_league)
